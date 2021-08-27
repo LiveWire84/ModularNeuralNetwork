@@ -27,7 +27,9 @@ Net = Mnn.NeuralNet(x, y, [1])
 #The third parameter defines your hidden layer. It takes in a 1-D array which has a length of no. of hidden layers your project require, 
 #with inner value being no. of neurons in each hidden layer
 #ie [No. of Neurons in layer 1, No. of neurons in layer 2, ......]
-print(Net.TrainNet(0.01, 3, True))    #  first parameter is learning rate, second parameter takes in the precision of NN, the final param is debug ie when set true the NN
-                                      #  prints the errors in the neurons, returns the final values of all the weights and biases when the NN is trained.
+print(Net.TrainNet(0.01, 3, True))    
+#  first parameter is learning rate, second parameter takes in how accurate you want NN to be(Putting value too high has diminishing results 3-4 works best), 
+#  the final param is debug ie when set true the NN prints the errors in the neurons
+#(WARNING: Debug reduces performance so use it only when req) returns the final values of all the weights and biases when the NN is trained.
 while True:
     print(Net.TestNet([float(input('x1:  ')), float(input('x2:  '))]))  #  To Test the trained network takes in a 1-D array of same len as one of your training sample
