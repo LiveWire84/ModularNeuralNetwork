@@ -18,7 +18,7 @@ x = np.array([
     [1, 4],
     [1.5, 4],
     [0, 5]
-])                                                                                          #  (Make sure your inputs are an 1-D array even if it has only one value).
+])                                                     #  (Make sure your inputs are an 1-D array even if it has only one value and your input and output dataset are an np.array).
 # Output Expected
 y = np.array([[0], [0], [0], [0], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]])    #  (Make sure your output are an 1-D array even if it has only one value).
 
