@@ -1,4 +1,6 @@
 import numpy as np
+
+
 # Sigmoid func, Takes in Array to apply sigmoid func
 
 
@@ -6,6 +8,9 @@ def g(Z):
     return 1 / (1 + np.e ** (-Z))
 
 
+def eta(x):
+    ETA = 0.0000000001
+    return np.maximum(x, ETA)
 # Core of the Neural Network
 
 
@@ -24,30 +29,34 @@ class NeuralNet:
         self.db = []
         self.b = []
         self.beckoning = []
+        self.val = 0
         for i in range(len(self.dim) - 1):
-            self.q.append(np.random.rand(self.dim[i + 1], self.dim[i]))
+            self.q.append(100*np.random.rand(self.dim[i + 1], self.dim[i]))
             self.d.append(np.zeros((self.dim[i + 1], self.dim[i])))
-            self.b.append(np.random.rand(self.dim[i + 1], 1))
+            self.b.append(100*np.random.rand(self.dim[i + 1], 1))
             self.db.append(np.zeros((self.dim[i + 1], 1)))
-            self.beckoning.append(False)                #
+            self.beckoning.append(False)  #
 
-    def forwardAndBackPropagate(self):
+    def forwardAndBackPropagate(self, l):
         for i in range(len(self.x)):
             a = [np.array(self.x[i], ndmin=2).T]
             for j in range(len(self.q)):
                 a.append(g(self.q[j] @ a[j] + self.b[j]))
-            sigma = [(a[-1] - np.array(self.y[i], ndmin=2).T) * a[-1] * (1 - a[-1])]
+            self.val = [a[-1], self.y[i]]
+            sigma = [(a[-1] - np.array(self.y[i], ndmin=2).T)]
             for j in range(1, len(self.q)):
                 sigma.insert(0, (self.q[-j].T @ sigma[0]) * a[-j - 1] * (1 - a[-j - 1]))
             for j in range(len(sigma)):
-                self.db[j] += sigma[j] / len(self.x)
-                self.d[j] += (sigma[j] @ a[j].T) / len(self.x)
+                self.db[j] = sigma[j]
+                self.d[j] = (sigma[j] @ a[j].T)
+            self.calcQ(l)
+
 
     def calcQ(self, l):
         for i in range(len(self.q)):
-            self.q[i] -= l * (self.d[i] + self.q[i])
+            self.q[i] -= l * (self.d[i]) / len(self.x)
         for i in range(len(self.b)):
-            self.b[i] -= l * self.db[i]
+            self.b[i] -= l * self.db[i] / len(self.x)
 
     def TestNet(self, x):
         a = [np.array(x, ndmin=2).T]
@@ -55,19 +64,29 @@ class NeuralNet:
             a.append(g(self.q[j] @ a[j] + self.b[j]))
         return a[-1]
 
-    def TrainNet(self, l, precision, debug):
-        while True:
-            self.forwardAndBackPropagate()
-            self.calcQ(l)
-            if debug:
-                print(self.d)
-                print(self.db)
-            for i in range(len(self.db)):
-                if (np.around(self.db[i], decimals=precision) == np.zeros(self.db[i].shape)).all():
-                    self.beckoning[i] = True
-                else:
-                    self.beckoning[i] = False
-            if all(self.beckoning):
-                break
+    def gradientCheck(self, e):
+        jqe = 0.00
+        jqe2 = 0.00
+        for i in range(len(self.x)):
+            a = [np.array(self.x[i], ndmin=2).T]
+            for j in range(len(self.q)):
+                a.append(g((self.q[j] + e) @ a[j] + (self.b[j] + e)))
+            af = [np.array(self.x[i], ndmin=2).T]
+            jqe -= (np.log(a[-1])*self.y[i] + np.log(eta(1 - a[-1]))*(1 - self.y[i]))
+            for j in range(len(self.q)):
+                af.append(g((self.q[j] - e) @ af[j] + (self.b[j] - e)))
+            jqe2 -= (np.log(af[-1])*self.y[i] + np.log(eta(1 - af[-1]))*(1 - self.y[i]))
+        return (jqe - jqe2)/(2 * e)
+
+    def TrainNet(self, l, debug, epochs):
+        print('initializing.... ')
+        for i in range(epochs):
+            while True:
+                self.forwardAndBackPropagate(l)
+                self.calcQ(l)
+                if debug:
+                    print(self.val)
+                    print(self.q)
         return 'Successful', self.q
+
 
